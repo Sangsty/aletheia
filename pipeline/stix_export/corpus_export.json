@@ -1,0 +1,551 @@
+{
+    "type": "bundle",
+    "id": "bundle--07caff9d-f5d9-442f-86ff-06d4ed904ff0",
+    "objects": [
+        {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": "indicator--4af166c3-e2cc-4179-8ee0-2a8a3ca3e862",
+            "created": "2026-10-05T15:08:35.436014Z",
+            "modified": "2026-10-05T15:08:35.436014Z",
+            "name": "Malicious activity from 192.0.2.88",
+            "description": "Source IP observed by an Aletheia honeypot node, severity=low, cryptographically verified on-chain.",
+            "indicator_types": [
+                "malicious-activity"
+            ],
+            "pattern": "[ipv4-addr:value = '192.0.2.88']",
+            "pattern_type": "stix",
+            "pattern_version": "2.1",
+            "valid_from": "2026-08-24T18:05:02.117428Z",
+            "x_aletheia_abuseipdb_score": 93,
+            "x_aletheia_greynoise_classification": "noise",
+            "x_aletheia_record_hash": "030102f0af9513b90c83179f1c45f7a3b53410e13b392952ef9f2d5d95284629"
+        },
+        {
+            "type": "malware",
+            "spec_version": "2.1",
+            "id": "malware--1512dac4-3004-4fdd-b1bd-c0427a5c2642",
+            "created": "2026-10-05T15:08:35.449388Z",
+            "modified": "2026-10-05T15:08:35.449388Z",
+            "name": "Credential Brute Force",
+            "description": "Attack classified by Aletheia's rule-based engine as: Credential Brute Force",
+            "is_family": false
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--7c192252-d75f-4769-af63-a421e3c1a39c",
+            "created": "2026-10-05T15:08:35.449912Z",
+            "modified": "2026-10-05T15:08:35.449912Z",
+            "name": "Brute Force",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1110/",
+                    "external_id": "T1110"
+                }
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--79d39745-f77f-4b17-8c14-fc8910d3e2a0",
+            "created": "2026-10-05T15:08:35.450287Z",
+            "modified": "2026-10-05T15:08:35.450287Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--4af166c3-e2cc-4179-8ee0-2a8a3ca3e862",
+            "target_ref": "malware--1512dac4-3004-4fdd-b1bd-c0427a5c2642"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--59d8b594-1a44-4a13-8b0f-56857e20f222",
+            "created": "2026-10-05T15:08:35.451349Z",
+            "modified": "2026-10-05T15:08:35.451349Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--1512dac4-3004-4fdd-b1bd-c0427a5c2642",
+            "target_ref": "attack-pattern--7c192252-d75f-4769-af63-a421e3c1a39c"
+        },
+        {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": "indicator--bc40f19b-7d33-43ac-84cc-d9d9bffb7430",
+            "created": "2026-10-05T15:08:35.451828Z",
+            "modified": "2026-10-05T15:08:35.451828Z",
+            "name": "Malicious activity from 198.51.100.23",
+            "description": "Source IP observed by an Aletheia honeypot node, severity=critical, cryptographically verified on-chain.",
+            "indicator_types": [
+                "malicious-activity"
+            ],
+            "pattern": "[ipv4-addr:value = '198.51.100.23']",
+            "pattern_type": "stix",
+            "pattern_version": "2.1",
+            "valid_from": "2026-08-23T05:40:02.117428Z",
+            "x_aletheia_abuseipdb_score": 88,
+            "x_aletheia_greynoise_classification": "noise",
+            "x_aletheia_record_hash": "7173ff2154fcd1ac8bef299c695fb4b29648286a7c872864a9aa6235ec78a691"
+        },
+        {
+            "type": "malware",
+            "spec_version": "2.1",
+            "id": "malware--b61ac317-9499-42b1-91dc-801b77dedc2b",
+            "created": "2026-10-05T15:08:35.453176Z",
+            "modified": "2026-10-05T15:08:35.453176Z",
+            "name": "Botnet Recruitment",
+            "description": "Attack classified by Aletheia's rule-based engine as: Botnet Recruitment",
+            "is_family": false
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--0ee64f23-5a75-4a3f-8537-b8c62efe2f16",
+            "created": "2026-10-05T15:08:35.453551Z",
+            "modified": "2026-10-05T15:08:35.453551Z",
+            "name": "Application Layer Protocol",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1071/",
+                    "external_id": "T1071"
+                }
+            ]
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--df3ed8c2-a55d-419e-abca-f8305440f062",
+            "created": "2026-10-05T15:08:35.453844Z",
+            "modified": "2026-10-05T15:08:35.453844Z",
+            "name": "Compromise Infrastructure",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1584/",
+                    "external_id": "T1584"
+                }
+            ]
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--6787b0bc-e57e-4bb8-9b4d-1cbfea6942ed",
+            "created": "2026-10-05T15:08:35.454319Z",
+            "modified": "2026-10-05T15:08:35.454319Z",
+            "name": "Command and Scripting Interpreter: Unix Shell",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1059/004/",
+                    "external_id": "T1059.004"
+                }
+            ]
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--3bdd21ba-0847-4669-b4e6-105ef6f803c0",
+            "created": "2026-10-05T15:08:35.454774Z",
+            "modified": "2026-10-05T15:08:35.454774Z",
+            "name": "Ingress Tool Transfer",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1105/",
+                    "external_id": "T1105"
+                }
+            ]
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--9985ffa8-2f00-4281-a82d-cbe2efb08bb5",
+            "created": "2026-10-05T15:08:35.4552Z",
+            "modified": "2026-10-05T15:08:35.4552Z",
+            "name": "System Information Discovery",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1082/",
+                    "external_id": "T1082"
+                }
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--7edb5572-2173-44e1-a84c-56ed8f80b3b6",
+            "created": "2026-10-05T15:08:35.455399Z",
+            "modified": "2026-10-05T15:08:35.455399Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--bc40f19b-7d33-43ac-84cc-d9d9bffb7430",
+            "target_ref": "malware--b61ac317-9499-42b1-91dc-801b77dedc2b"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--3076c58d-5280-4995-bd6d-f7befd64496f",
+            "created": "2026-10-05T15:08:35.455636Z",
+            "modified": "2026-10-05T15:08:35.455636Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--b61ac317-9499-42b1-91dc-801b77dedc2b",
+            "target_ref": "attack-pattern--0ee64f23-5a75-4a3f-8537-b8c62efe2f16"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--0ebe257a-4013-46ed-8e19-1f9610473edf",
+            "created": "2026-10-05T15:08:35.45586Z",
+            "modified": "2026-10-05T15:08:35.45586Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--b61ac317-9499-42b1-91dc-801b77dedc2b",
+            "target_ref": "attack-pattern--df3ed8c2-a55d-419e-abca-f8305440f062"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--b1c7a5c7-e5e0-45b1-8680-665350d6674a",
+            "created": "2026-10-05T15:08:35.456122Z",
+            "modified": "2026-10-05T15:08:35.456122Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--b61ac317-9499-42b1-91dc-801b77dedc2b",
+            "target_ref": "attack-pattern--6787b0bc-e57e-4bb8-9b4d-1cbfea6942ed"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--7611df90-aa7f-40ce-97b1-8a7ca9f3c903",
+            "created": "2026-10-05T15:08:35.45634Z",
+            "modified": "2026-10-05T15:08:35.45634Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--b61ac317-9499-42b1-91dc-801b77dedc2b",
+            "target_ref": "attack-pattern--3bdd21ba-0847-4669-b4e6-105ef6f803c0"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--a5b519b3-fa7e-4154-adbc-a6ccdce5fa91",
+            "created": "2026-10-05T15:08:35.456554Z",
+            "modified": "2026-10-05T15:08:35.456554Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--b61ac317-9499-42b1-91dc-801b77dedc2b",
+            "target_ref": "attack-pattern--9985ffa8-2f00-4281-a82d-cbe2efb08bb5"
+        },
+        {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": "indicator--199f0910-2dd9-4314-9a2d-fd1863818485",
+            "created": "2026-10-05T15:08:35.456957Z",
+            "modified": "2026-10-05T15:08:35.456957Z",
+            "name": "Malicious activity from 103.224.182.19",
+            "description": "Source IP observed by an Aletheia honeypot node, severity=medium, cryptographically verified on-chain.",
+            "indicator_types": [
+                "malicious-activity"
+            ],
+            "pattern": "[ipv4-addr:value = '103.224.182.19']",
+            "pattern_type": "stix",
+            "pattern_version": "2.1",
+            "valid_from": "2026-08-22T14:10:02.117428Z",
+            "x_aletheia_abuseipdb_score": 89,
+            "x_aletheia_greynoise_classification": "unknown",
+            "x_aletheia_record_hash": "9c3035ed4379909ead51402229f65b7604dfb5911833b388d1e58893b6b0ca5a"
+        },
+        {
+            "type": "malware",
+            "spec_version": "2.1",
+            "id": "malware--bf064585-cc3f-495e-ad39-ab8da5465e40",
+            "created": "2026-10-05T15:08:35.457981Z",
+            "modified": "2026-10-05T15:08:35.457981Z",
+            "name": "Reconnaissance",
+            "description": "Attack classified by Aletheia's rule-based engine as: Reconnaissance",
+            "is_family": false
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--1388ccaa-7a84-4863-9635-5ce0cd66d438",
+            "created": "2026-10-05T15:08:35.458388Z",
+            "modified": "2026-10-05T15:08:35.458388Z",
+            "name": "System Information Discovery",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1082/",
+                    "external_id": "T1082"
+                }
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--16ddbc3e-22e0-468d-b32d-0b2f732ad842",
+            "created": "2026-10-05T15:08:35.458631Z",
+            "modified": "2026-10-05T15:08:35.458631Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--199f0910-2dd9-4314-9a2d-fd1863818485",
+            "target_ref": "malware--bf064585-cc3f-495e-ad39-ab8da5465e40"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--c159efb7-6605-4f5a-a442-881300ad42dc",
+            "created": "2026-10-05T15:08:35.458861Z",
+            "modified": "2026-10-05T15:08:35.458861Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--bf064585-cc3f-495e-ad39-ab8da5465e40",
+            "target_ref": "attack-pattern--1388ccaa-7a84-4863-9635-5ce0cd66d438"
+        },
+        {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": "indicator--bc5e5e10-17cc-4f9c-ad2c-377df3a5a595",
+            "created": "2026-10-05T15:08:35.459234Z",
+            "modified": "2026-10-05T15:08:35.459234Z",
+            "name": "Malicious activity from 45.83.12.9",
+            "description": "Source IP observed by an Aletheia honeypot node, severity=critical, cryptographically verified on-chain.",
+            "indicator_types": [
+                "malicious-activity"
+            ],
+            "pattern": "[ipv4-addr:value = '45.83.12.9']",
+            "pattern_type": "stix",
+            "pattern_version": "2.1",
+            "valid_from": "2026-08-21T09:02:11.220331Z",
+            "x_aletheia_abuseipdb_score": 63,
+            "x_aletheia_greynoise_classification": "noise",
+            "x_aletheia_record_hash": "c81c41f1d2507236e3cad1719e40ec2bf7c18a5a8df287c5484157ded5048cc2"
+        },
+        {
+            "type": "malware",
+            "spec_version": "2.1",
+            "id": "malware--77249501-3bea-453b-a7b4-0d15a03ec7b5",
+            "created": "2026-10-05T15:08:35.460258Z",
+            "modified": "2026-10-05T15:08:35.460258Z",
+            "name": "Cryptominer Installation",
+            "description": "Attack classified by Aletheia's rule-based engine as: Cryptominer Installation",
+            "is_family": false
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--5f326810-e2f3-43d1-825c-e724962262b3",
+            "created": "2026-10-05T15:08:35.460603Z",
+            "modified": "2026-10-05T15:08:35.460603Z",
+            "name": "Resource Hijacking",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1496/",
+                    "external_id": "T1496"
+                }
+            ]
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--e866e53f-a16a-4f2e-b16f-a3c4e653a5d6",
+            "created": "2026-10-05T15:08:35.460874Z",
+            "modified": "2026-10-05T15:08:35.460874Z",
+            "name": "Command and Scripting Interpreter: Unix Shell",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1059/004/",
+                    "external_id": "T1059.004"
+                }
+            ]
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--80dc144c-0687-4922-afa5-289ed5f19162",
+            "created": "2026-10-05T15:08:35.461126Z",
+            "modified": "2026-10-05T15:08:35.461126Z",
+            "name": "Ingress Tool Transfer",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1105/",
+                    "external_id": "T1105"
+                }
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--c2e49237-d65e-454a-b686-66b3c4115477",
+            "created": "2026-10-05T15:08:35.461299Z",
+            "modified": "2026-10-05T15:08:35.461299Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--bc5e5e10-17cc-4f9c-ad2c-377df3a5a595",
+            "target_ref": "malware--77249501-3bea-453b-a7b4-0d15a03ec7b5"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--2c1c37c4-39fc-44bf-96eb-2a462a53f645",
+            "created": "2026-10-05T15:08:35.461526Z",
+            "modified": "2026-10-05T15:08:35.461526Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--77249501-3bea-453b-a7b4-0d15a03ec7b5",
+            "target_ref": "attack-pattern--5f326810-e2f3-43d1-825c-e724962262b3"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--7bfda1b6-6eab-4905-9b78-603cf40678e2",
+            "created": "2026-10-05T15:08:35.461739Z",
+            "modified": "2026-10-05T15:08:35.461739Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--77249501-3bea-453b-a7b4-0d15a03ec7b5",
+            "target_ref": "attack-pattern--e866e53f-a16a-4f2e-b16f-a3c4e653a5d6"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--637c32f2-b07e-4338-87b1-8e962e64f9ad",
+            "created": "2026-10-05T15:08:35.461948Z",
+            "modified": "2026-10-05T15:08:35.461948Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--77249501-3bea-453b-a7b4-0d15a03ec7b5",
+            "target_ref": "attack-pattern--80dc144c-0687-4922-afa5-289ed5f19162"
+        },
+        {
+            "type": "indicator",
+            "spec_version": "2.1",
+            "id": "indicator--10c39898-8a64-4d73-9e5a-179db0d86b9d",
+            "created": "2026-10-05T15:08:35.462441Z",
+            "modified": "2026-10-05T15:08:35.462441Z",
+            "name": "Malicious activity from 185.220.101.5",
+            "description": "Source IP observed by an Aletheia honeypot node, severity=high, cryptographically verified on-chain.",
+            "indicator_types": [
+                "malicious-activity"
+            ],
+            "pattern": "[ipv4-addr:value = '185.220.101.5']",
+            "pattern_type": "stix",
+            "pattern_version": "2.1",
+            "valid_from": "2026-08-20T02:14:02.817428Z",
+            "x_aletheia_abuseipdb_score": 81,
+            "x_aletheia_greynoise_classification": "noise",
+            "x_aletheia_record_hash": "1ad5b59d376492bacdff4218a1ab6c9ca1c1e0ab92b08fd4f31e157cb595e915"
+        },
+        {
+            "type": "malware",
+            "spec_version": "2.1",
+            "id": "malware--35bceb1d-e201-4c2e-a061-0febd6d562ed",
+            "created": "2026-10-05T15:08:35.463394Z",
+            "modified": "2026-10-05T15:08:35.463394Z",
+            "name": "Malware Deployment",
+            "description": "Attack classified by Aletheia's rule-based engine as: Malware Deployment",
+            "is_family": false
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--8cac97f5-aba6-40f0-a465-861bf9788510",
+            "created": "2026-10-05T15:08:35.463925Z",
+            "modified": "2026-10-05T15:08:35.463925Z",
+            "name": "Command and Scripting Interpreter: Unix Shell",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1059/004/",
+                    "external_id": "T1059.004"
+                }
+            ]
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--15bf936e-5724-4734-b813-9452118b443a",
+            "created": "2026-10-05T15:08:35.464303Z",
+            "modified": "2026-10-05T15:08:35.464303Z",
+            "name": "Ingress Tool Transfer",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1105/",
+                    "external_id": "T1105"
+                }
+            ]
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--06f64e05-1f68-42cd-80e4-0cd6f1c11269",
+            "created": "2026-10-05T15:08:35.464637Z",
+            "modified": "2026-10-05T15:08:35.464637Z",
+            "name": "System Information Discovery",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1082/",
+                    "external_id": "T1082"
+                }
+            ]
+        },
+        {
+            "type": "attack-pattern",
+            "spec_version": "2.1",
+            "id": "attack-pattern--b4d693f1-5520-4799-805d-fa523bdb5765",
+            "created": "2026-10-05T15:08:35.465023Z",
+            "modified": "2026-10-05T15:08:35.465023Z",
+            "name": "Brute Force",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/techniques/T1110/",
+                    "external_id": "T1110"
+                }
+            ]
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--af679cda-2ba9-466a-a4ba-3d671f283f5e",
+            "created": "2026-10-05T15:08:35.465338Z",
+            "modified": "2026-10-05T15:08:35.465338Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--10c39898-8a64-4d73-9e5a-179db0d86b9d",
+            "target_ref": "malware--35bceb1d-e201-4c2e-a061-0febd6d562ed"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--f0e11547-53b3-4d01-83a0-76f8675342c1",
+            "created": "2026-10-05T15:08:35.465575Z",
+            "modified": "2026-10-05T15:08:35.465575Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--35bceb1d-e201-4c2e-a061-0febd6d562ed",
+            "target_ref": "attack-pattern--8cac97f5-aba6-40f0-a465-861bf9788510"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--79680267-9118-44ab-969c-27f718eed1cd",
+            "created": "2026-10-05T15:08:35.465786Z",
+            "modified": "2026-10-05T15:08:35.465786Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--35bceb1d-e201-4c2e-a061-0febd6d562ed",
+            "target_ref": "attack-pattern--15bf936e-5724-4734-b813-9452118b443a"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--fb6eca5e-efa7-4e82-b498-1541cae07eb7",
+            "created": "2026-10-05T15:08:35.466062Z",
+            "modified": "2026-10-05T15:08:35.466062Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--35bceb1d-e201-4c2e-a061-0febd6d562ed",
+            "target_ref": "attack-pattern--06f64e05-1f68-42cd-80e4-0cd6f1c11269"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--b77d1c43-b4e8-44e9-8312-c691c9721195",
+            "created": "2026-10-05T15:08:35.46652Z",
+            "modified": "2026-10-05T15:08:35.46652Z",
+            "relationship_type": "uses",
+            "source_ref": "malware--35bceb1d-e201-4c2e-a061-0febd6d562ed",
+            "target_ref": "attack-pattern--b4d693f1-5520-4799-805d-fa523bdb5765"
+        }
+    ]
+}

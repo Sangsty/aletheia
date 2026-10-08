@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aletheia — Threat Record Search</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f1117;
+    color: #e6e6e6;
+    margin: 0;
+    padding: 30px 20px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: #8a8fa3; font-size: 13px; margin-bottom: 24px; }
+
+  .search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  input[type="text"] {
+    flex: 1;
+    min-width: 220px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #33395a;
+    background: #161925;
+    color: #fff;
+    font-size: 14px;
+  }
+  select {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #33395a;
+    background: #161925;
+    color: #fff;
+    font-size: 14px;
+  }
+  .result-count { color: #6b7086; font-size: 12px; margin-bottom: 16px; }
+
+  .record {
+    background: #161925;
+    border: 1px solid #262a3a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+  .record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .record-title { font-size: 16px; font-weight: 600; color: #fff; }
+  .severity-badge {
+    padding: 3px 12px;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+  }
+  .sev-low { background: #4caf50; }
+  .sev-medium { background: #ff9800; }
+  .sev-high { background: #f44336; }
+  .sev-critical { background: #8e24aa; }
+
+  .meta-row { color: #8a8fa3; font-size: 12px; margin-bottom: 8px; }
+  .tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: Consolas, monospace;
+    background: #262a3a;
+    color: #7cb9ff;
+    border: 1px solid #33395a;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+  }
+  .tag:hover { background: #33395a; }
+  .hash { font-family: Consolas, monospace; font-size: 10px; color: #ffd479; word-break: break-all; margin-top: 8px; }
+  .no-results { color: #6b7086; text-align: center; padding: 40px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Aletheia — Threat Record Search</h1>
+  <div class="subtitle">Search the verified attack corpus by IP, attack type, or MITRE ATT&amp;CK technique — like looking up an entry in a dictionary.</div>
+
+  <div class="search-bar">
+    <input type="text" id="searchBox" placeholder="Search IP, ATT&CK ID (e.g. T1110), attack type, or command...">
+    <select id="attackTypeFilter">
+      <option value="">All attack types</option>
+    </select>
+    <select id="severityFilter">
+      <option value="">All severities</option>
+    </select>
+  </div>
+
+  <div class="result-count" id="resultCount"></div>
+  <div id="results"></div>
+</div>
+
+<script>
+let CORPUS = [];
+
+async function loadCorpus() {
+  const res = await fetch('corpus.json');
+  CORPUS = await res.json();
+  populateFilters();
+  render(CORPUS);
+}
+
+function populateFilters() {
+  const attackTypes = [...new Set(CORPUS.map(r => r.attack_type))].sort();
+  const severities = [...new Set(CORPUS.map(r => r.severity))].sort();
+
+  const atSelect = document.getElementById('attackTypeFilter');
+  attackTypes.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t.replace(/_/g, ' ');
+    atSelect.appendChild(opt);
+  });
+
+  const sevSelect = document.getElementById('severityFilter');
+  severities.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    sevSelect.appendChild(opt);
+  });
+}
+
+function matchesQuery(record, query) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  return (
+    record.src_ip.toLowerCase().includes(q) ||
+    record.attack_type.toLowerCase().includes(q) ||
+    record.attck_technique_ids.some(id => id.toLowerCase().includes(q)) ||
+    record.commands.some(cmd => cmd.toLowerCase().includes(q)) ||
+    record.session_id.toLowerCase().includes(q)
+  );
+}
+
+function render(list) {
+  const container = document.getElementById('results');
+  const countEl = document.getElementById('resultCount');
+  countEl.textContent = `${list.length} record${list.length === 1 ? '' : 's'} found`;
+
+  if (list.length === 0) {
+    container.innerHTML = '<div class="no-results">No matching records.</div>';
+    return;
+  }
+
+  container.innerHTML = list.map(r => `
+    <div class="record">
+      <div class="record-header">
+        <div class="record-title">${r.attack_type.replace(/_/g, ' ')}</div>
+        <div class="severity-badge sev-${r.severity}">${r.severity}</div>
+      </div>
+      <div class="meta-row">
+        Session ${r.session_id} &middot; Node ${r.node_id} &middot; ${r.protocol.toUpperCase()} &middot; Source IP ${r.src_ip}
+      </div>
+      <div>
+        ${r.attck_technique_ids.map(id => `<span class="tag" onclick="searchFor('${id}')">${id}</span>`).join('')}
+      </div>
+      <div class="meta-row" style="margin-top:8px;">
+        AbuseIPDB: ${r.abuseipdb_confidence}/100 &middot; GreyNoise: ${r.greynoise_classification} &middot; Commands: ${r.commands.length} &middot; Files downloaded: ${r.files_downloaded}
+      </div>
+      <div class="hash">Hash: ${r.record_hash}</div>
+    </div>
+  `).join('');
+}
+
+function applyFilters() {
+  const query = document.getElementById('searchBox').value;
+  const attackType = document.getElementById('attackTypeFilter').value;
+  const severity = document.getElementById('severityFilter').value;
+
+  const filtered = CORPUS.filter(r =>
+    matchesQuery(r, query) &&
+    (!attackType || r.attack_type === attackType) &&
+    (!severity || r.severity === severity)
+  );
+  render(filtered);
+}
+
+function searchFor(term) {
+  document.getElementById('searchBox').value = term;
+  applyFilters();
+}
+
+document.getElementById('searchBox').addEventListener('input', applyFilters);
+document.getElementById('attackTypeFilter').addEventListener('change', applyFilters);
+document.getElementById('severityFilter').addEventListener('change', applyFilters);
+
+loadCorpus();
+</script>
+</body>
+</html>
