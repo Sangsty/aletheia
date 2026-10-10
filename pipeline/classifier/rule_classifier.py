@@ -54,6 +54,10 @@ DEFENSE_EVASION_SIGNATURES = [
     r"rm\s+-rf\s+/var/log", r">\s*/var/log/\S+",
 ]
 
+SHELL_PROBE_SIGNATURES = [
+    r"echo\s+-e\s+[\"']?(\\x[0-9a-fA-F]{2}){2,}",  # hex-encoded echo, used to fingerprint shell/environment
+]
+
 
 def _matches_brute_force(session: SessionRecord) -> bool:
     return len(session.credential_attempts) >= 3
@@ -61,10 +65,19 @@ def _matches_brute_force(session: SessionRecord) -> bool:
 
 def _matches_reconnaissance(session: SessionRecord) -> bool:
     for cmd in session.command_sequence:
-        first_token = cmd.strip().split(" ")[0] if cmd.strip() else ""
-        if first_token in RECON_COMMANDS:
+        stripped = cmd.strip()
+        if not stripped:
+            continue
+        first_token = stripped.split(" ")[0]
+        basename = first_token.split("/")[-1]  # strips "/bin/./" style prefixes
+        if basename in RECON_COMMANDS:
             return True
     return False
+
+
+def _matches_shell_probe(session: SessionRecord) -> bool:
+    joined = " ".join(session.command_sequence)
+    return any(re.search(pattern, joined) for pattern in SHELL_PROBE_SIGNATURES)
 
 
 def _matches_malware_deployment(session: SessionRecord) -> bool:
@@ -173,6 +186,13 @@ RULES = [
         "attack_type": AttackType.reconnaissance,
         "severity": Severity.medium,
         "attck_ids": ["T1082"],
+    },
+    {
+        "name": "shell_fingerprint_probe",
+        "matcher": _matches_shell_probe,
+        "attack_type": AttackType.reconnaissance,
+        "severity": Severity.medium,
+        "attck_ids": ["T1082", "T1497"],
     },
     {
         "name": "repeated_credential_attempts",
