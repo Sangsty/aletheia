@@ -5,6 +5,12 @@ events across hundreds of sessions) through classification,
 enrichment, and storage in one pass — the batch alternative to
 running run_full_pipeline.py once per session.
 
+Performance note: this opens ONE database connection for the whole
+run and reuses it for every session_exists()/save_record() call,
+instead of opening and closing a fresh connection per session (which
+was costing two full connect/auth round-trips per session on top of
+the actual classify/enrich/insert work).
+
 Usage:
     python bulk_process_log.py <path_to_raw_cowrie_log.json> --node-id node-A
 """
@@ -28,7 +34,7 @@ from session_reconstructor import reconstruct_session
 from rule_classifier import classify_session
 from enrichment import enrich_session
 from session_record import EnrichedThreatRecord
-from db import save_record, session_exists
+from db import save_record, session_exists, get_connection
 
 
 def load_raw_events(log_path: Path) -> list[dict]:
@@ -74,29 +80,35 @@ def main():
     processed = 0
     errors = 0
 
-    for session_id, session_events in sessions.items():
-        if session_exists(session_id):
-            skipped += 1
-            continue
+    # One connection for the entire bulk run, reused for every session's
+    # existence check and insert, instead of reconnecting per session.
+    conn = get_connection()
+    try:
+        for session_id, session_events in sessions.items():
+            if session_exists(session_id, conn=conn):
+                skipped += 1
+                continue
 
-        try:
-            session = reconstruct_session(session_events, node_id=args.node_id)
-            classification = classify_session(session)
-            enrichment = enrich_session(session)
-            record = EnrichedThreatRecord(
-                session=session, classification=classification, enrichment=enrichment
-            )
-            canonical_json = json.dumps(record.canonical_dict(), sort_keys=True)
-            record_hash = hashlib.sha256(canonical_json.encode()).hexdigest()
+            try:
+                session = reconstruct_session(session_events, node_id=args.node_id)
+                classification = classify_session(session)
+                enrichment = enrich_session(session)
+                record = EnrichedThreatRecord(
+                    session=session, classification=classification, enrichment=enrichment
+                )
+                canonical_json = json.dumps(record.canonical_dict(), sort_keys=True)
+                record_hash = hashlib.sha256(canonical_json.encode()).hexdigest()
 
-            save_record(record, record_hash)
+                save_record(record, record_hash, conn=conn)
 
-            stats[classification.attack_type.value] += 1
-            severity_stats[classification.severity.value] += 1
-            processed += 1
-        except Exception as e:
-            errors += 1
-            print(f"  [ERROR] session {session_id}: {e}")
+                stats[classification.attack_type.value] += 1
+                severity_stats[classification.severity.value] += 1
+                processed += 1
+            except Exception as e:
+                errors += 1
+                print(f"  [ERROR] session {session_id}: {e}")
+    finally:
+        conn.close()
 
     print("\n" + "=" * 50)
     print("BULK PROCESSING SUMMARY")
