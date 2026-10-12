@@ -123,6 +123,25 @@ def _matches_defense_evasion(session: SessionRecord) -> bool:
     return any(re.search(pattern, joined) for pattern in DEFENSE_EVASION_SIGNATURES)
 
 
+def _matches_single_credential_probe(session: SessionRecord) -> bool:
+    """
+    No shell commands ever ran, and exactly one credential attempt was
+    made — an opportunistic single-shot login try, not persistent enough
+    to count as brute force (that needs >=3), but not nothing either.
+    """
+    return len(session.command_sequence) == 0 and len(session.credential_attempts) == 1
+
+
+def _matches_banner_grab(session: SessionRecord) -> bool:
+    """
+    No shell commands, no credential attempts at all — the connection
+    was opened (and Cowrie's SSH banner was presumably read) and then
+    closed without any authentication attempt. Typical of mass internet
+    scanners that fingerprint the banner/version and move on.
+    """
+    return len(session.command_sequence) == 0 and len(session.credential_attempts) == 0
+
+
 RULES = [
     {
         "name": "cryptominer_signature_match",
@@ -200,6 +219,20 @@ RULES = [
         "attack_type": AttackType.credential_brute_force,
         "severity": Severity.low,
         "attck_ids": ["T1110"],
+    },
+    {
+        "name": "single_credential_probe_pattern",
+        "matcher": _matches_single_credential_probe,
+        "attack_type": AttackType.single_credential_probe,
+        "severity": Severity.low,
+        "attck_ids": ["T1110"],
+    },
+    {
+        "name": "banner_grab_pattern",
+        "matcher": _matches_banner_grab,
+        "attack_type": AttackType.banner_grab,
+        "severity": Severity.low,
+        "attck_ids": ["T1595"],
     },
 ]
 

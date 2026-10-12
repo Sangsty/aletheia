@@ -1,4 +1,4 @@
-"""
+﻿"""
 Aletheia — Session Record Models
 Pipeline: Pillar 2 (The Brain)
 
@@ -32,6 +32,8 @@ class AttackType(str, Enum):
     privilege_escalation = "privilege_escalation"
     persistence_mechanism = "persistence_mechanism"
     defense_evasion = "defense_evasion"
+    single_credential_probe = "single_credential_probe"
+    banner_grab = "banner_grab"
     unclassified = "unclassified"
 
 
