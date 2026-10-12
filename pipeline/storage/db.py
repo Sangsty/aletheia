@@ -24,20 +24,9 @@ Usage:
     save_record(record, record_hash)    # record: EnrichedThreatRecord
     rows = fetch_all_records()          # list of dicts, from the view
 
-Connection reuse (performance note):
-    session_exists() and save_record() each used to open AND close a
-    brand-new Postgres connection on every call. In a bulk run that
-    means two full connect/auth round-trips per session (one to check
-    existence, one to insert) — for thousands of sessions that adds up
-    to real wall-clock time, even though the actual work (classifying,
-    enriching) is fast.
-
-    Both functions now accept an optional `conn` parameter. Pass an
-    existing connection (from get_connection()) to reuse it across many
-    calls — the caller is then responsible for closing it. Leave `conn`
-    out and the old behavior is unchanged: a fresh connection is opened
-    and closed for that single call. Nothing else about the schema,
-    transaction boundaries, or error handling changed.
+Optionally pass an existing `conn` (pg8000.native.Connection) to
+session_exists() / save_record() to reuse one connection across a
+bulk run instead of opening/closing a new one per call.
 """
 
 from __future__ import annotations
@@ -71,6 +60,28 @@ if DB_CONFIG["password"] is None:
         "root with ALETHEIA_DB_PASSWORD=<your local Postgres password>."
     )
 
+# ───────────────────────────────────────────────────────────────
+# Safety limits on attacker-controlled input.
+#
+# Everything below comes straight from an unauthenticated attacker
+# (commands typed into Cowrie's emulated shell, SSH/telnet login
+# attempts, download URLs). None of it is validated upstream, so we
+# bound it here before it ever reaches Postgres — this only clips
+# pathological/abusive outliers (e.g. someone pasting a multi-MB
+# string into a login prompt); real attacker commands/credentials
+# are always a handful of characters, so this never affects genuine
+# session data.
+# ───────────────────────────────────────────────────────────────
+MAX_FIELD_LEN = 1000       # per-string cap (username, password, a single command, url)
+MAX_COMMANDS_PER_SESSION = 500   # cap on command_sequence length, to block flood-style sessions
+
+
+def _truncate(value: Optional[str], max_len: int = MAX_FIELD_LEN) -> Optional[str]:
+    """Clips a string to max_len. Leaves None alone."""
+    if value is None:
+        return None
+    return value[:max_len]
+
 
 def get_connection() -> pg8000.native.Connection:
     """Opens a new connection using DB_CONFIG (env vars override defaults)."""
@@ -90,11 +101,8 @@ def save_record(
     a duplicate insert attempt usually means a bug upstream, and
     that should be visible rather than silently ignored.
 
-    Pass an existing `conn` (from get_connection()) to reuse it across
-    many calls instead of opening a fresh connection each time — the
-    caller owns that connection and is responsible for closing it.
-    If `conn` is omitted, behavior is unchanged: a connection is opened
-    for this call and closed before returning.
+    Pass an existing `conn` to reuse a connection across a bulk run;
+    otherwise a new one is opened and closed for this call only.
 
     Returns the session's UUID (as text) on success.
     """
@@ -105,6 +113,11 @@ def save_record(
     owns_conn = conn is None
     if owns_conn:
         conn = get_connection()
+
+    # Bound attacker-controlled strings before they hit the DB.
+    safe_commands = [
+        _truncate(cmd) for cmd in session.command_sequence[:MAX_COMMANDS_PER_SESSION]
+    ]
 
     try:
         conn.run("BEGIN")
@@ -126,7 +139,7 @@ def save_record(
             session_start=session.session_start,
             session_end=session.session_end,
             duration_seconds=session.duration_seconds,
-            command_sequence=json.dumps(session.command_sequence),
+            command_sequence=json.dumps(safe_commands),
         )
         session_uuid = result[0][0]
 
@@ -136,8 +149,10 @@ def save_record(
                 INSERT INTO credential_attempts (session_id, username, password, success)
                 VALUES (:session_id, :username, :password, :success)
                 """,
-                session_id=session_uuid, username=attempt.username,
-                password=attempt.password, success=attempt.success,
+                session_id=session_uuid,
+                username=_truncate(attempt.username),
+                password=_truncate(attempt.password),
+                success=attempt.success,
             )
 
         for artifact in session.file_artifacts:
@@ -146,8 +161,10 @@ def save_record(
                 INSERT INTO file_artifacts (session_id, url, sha256, file_size_bytes)
                 VALUES (:session_id, :url, :sha256, :file_size_bytes)
                 """,
-                session_id=session_uuid, url=artifact.url,
-                sha256=artifact.sha256, file_size_bytes=artifact.file_size_bytes,
+                session_id=session_uuid,
+                url=_truncate(artifact.url),
+                sha256=artifact.sha256,
+                file_size_bytes=artifact.file_size_bytes,
             )
 
         conn.run(
@@ -180,10 +197,10 @@ def save_record(
             score=abuse.confidence_score if abuse else None,
             categories=json.dumps(abuse.abuse_categories) if abuse else json.dumps([]),
             reports=abuse.total_reports if abuse else 0,
-            isp=abuse.isp if abuse else None,
+            isp=_truncate(abuse.isp) if abuse else None,
             country=abuse.country_code if abuse else None,
             gn_class=grey.classification.value if grey else "unknown",
-            gn_actor=grey.actor if grey else None,
+            gn_actor=_truncate(grey.actor) if grey else None,
             gn_last_seen=grey.last_seen if grey else None,
         )
 
@@ -193,7 +210,8 @@ def save_record(
                 INSERT INTO chain_references (session_id, record_hash, submitting_node)
                 VALUES (:session_id, :record_hash, :submitting_node)
                 """,
-                session_id=session_uuid, record_hash=record_hash,
+                session_id=session_uuid,
+                record_hash=record_hash,
                 submitting_node=session.node_id,
             )
 
@@ -218,23 +236,15 @@ def fetch_all_records() -> list[dict]:
         conn.close()
 
 
-def session_exists(
-    session_id: str,
-    conn: Optional[pg8000.native.Connection] = None,
-) -> bool:
+def session_exists(session_id: str, conn: Optional[pg8000.native.Connection] = None) -> bool:
     """
     Checks whether a session_id is already stored (useful before calling
-    save_record).
-
-    Pass an existing `conn` to reuse it instead of opening a fresh
-    connection for this one check — the caller owns that connection.
-    If `conn` is omitted, behavior is unchanged: a connection is opened
-    for this call and closed before returning.
+    save_record). Pass an existing `conn` to reuse a connection across a
+    bulk run; otherwise a new one is opened and closed for this call only.
     """
     owns_conn = conn is None
     if owns_conn:
         conn = get_connection()
-
     try:
         rows = conn.run("SELECT 1 FROM sessions WHERE session_id = :sid", sid=session_id)
         return len(rows) > 0
