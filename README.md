@@ -95,7 +95,3 @@ As of the latest full data pull across all three nodes:
    python pipeline/storage/check_totals.py
    ```
 
-## Team
-
-Mini-project for Batch No. 7, Department of CSE-IoT, Cybersecurity including Blockchain, DSATM.
-Faculty guides: Sangeetha G, Madhumala R B.
