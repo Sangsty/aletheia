@@ -34,6 +34,7 @@ class AttackType(str, Enum):
     defense_evasion = "defense_evasion"
     single_credential_probe = "single_credential_probe"
     banner_grab = "banner_grab"
+    shell_verification_probe = "shell_verification_probe"
     unclassified = "unclassified"
 
 

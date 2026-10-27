@@ -52,6 +52,8 @@ DEFENSE_EVASION_SIGNATURES = [
     r"\bhistory\s+-c\b", r"\bunset\s+HISTFILE\b", r"export\s+HISTSIZE=0",
     r"rm\s+.*\.bash_history", r">\s*~?/?\.bash_history", r"\bshred\b",
     r"rm\s+-rf\s+/var/log", r">\s*/var/log/\S+",
+    r"\bchattr\s+[-+]?\w*i\w*\b",  # flips immutable/append-only attr, often to lock out other attackers/admin
+    r"\blockr\b",  # IoT-botnet directory-lockdown tool, not a standard binary — near-zero false positive rate
 ]
 
 SHELL_PROBE_SIGNATURES = [
@@ -142,6 +144,22 @@ def _matches_banner_grab(session: SessionRecord) -> bool:
     return len(session.command_sequence) == 0 and len(session.credential_attempts) == 0
 
 
+def _matches_shell_verification_probe(session: SessionRecord) -> bool:
+    """
+    Exactly one command, a simple 'echo <token>' — the classic shell
+    liveness-check bots run to confirm they got a real, responsive
+    shell before committing to a payload. Distinct from reconnaissance
+    (which runs system-info commands like whoami/uname) and from the
+    hex-encoded shell_fingerprint_probe above (which sends encoded
+    escape sequences, not a plain word).
+    """
+    if len(session.command_sequence) != 1:
+        return False
+    cmd = session.command_sequence[0].strip()
+    parts = cmd.split()
+    return len(parts) == 2 and parts[0] == "echo"
+
+
 RULES = [
     {
         "name": "cryptominer_signature_match",
@@ -197,7 +215,7 @@ RULES = [
         "matcher": _matches_defense_evasion,
         "attack_type": AttackType.defense_evasion,
         "severity": Severity.high,
-        "attck_ids": ["T1070"],
+        "attck_ids": ["T1070", "T1222"],
     },
     {
         "name": "recon_command_pattern",
@@ -233,6 +251,13 @@ RULES = [
         "attack_type": AttackType.banner_grab,
         "severity": Severity.low,
         "attck_ids": ["T1595"],
+    },
+    {
+        "name": "shell_verification_probe_pattern",
+        "matcher": _matches_shell_verification_probe,
+        "attack_type": AttackType.shell_verification_probe,
+        "severity": Severity.low,
+        "attck_ids": ["T1059"],
     },
 ]
 
