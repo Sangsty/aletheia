@@ -1,48 +1,3 @@
-# Aletheia
-
-**A federated, blockchain-anchored honeypot threat intelligence framework.**
-
-Aletheia deploys independently-operated SSH/Telnet honeypots across multiple cloud providers and continents, classifies the attack sessions they capture using a rule-based engine mapped to MITRE ATT&CK, enriches them with threat-intel context, and anchors a tamper-evident hash of each classified record on a public blockchain — so that threat intelligence from one node can be independently corroborated by others without trusting a single central authority.
-
----
-
-## Why federated + blockchain?
-
-A single honeypot only sees what hits it. A centralized threat-intel platform requires trusting whoever operates it. Aletheia's design goal is to let multiple independently-operated honeypot nodes contribute threat records to a shared, append-only, corroborable ledger — so that an attacker IP flagged by one node can be cross-verified against sightings from others, and the resulting record can't be quietly altered after the fact.
-
-## Architecture
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Node A      │     │   Node B      │     │   Node C      │
-│ Oracle Cloud  │     │  AWS (US)     │     │  GCP (EU)     │
-│  (India)      │     │               │     │ Frankfurt     │
-└──────┬──────┘     └──────┬──────┘     └──────┬──────┘
-       │ Cowrie honeypot (SSH/Telnet, de-fingerprinted)
-       ▼                     ▼                     ▼
-              Raw session logs (cowrie.json)
-                       │
-                       ▼
-         ┌─────────────────────────────┐
-         │   Pillar 2 — The Brain        │
-         │  Session reconstruction       │
-         │  Rule-based classifier        │
-         │  (MITRE ATT&CK mapped)        │
-         │  Threat-intel enrichment      │
-         └──────────────┬────────────────┘
-                         ▼
-         ┌─────────────────────────────┐
-         │  PostgreSQL (off-chain store) │
-         │  Full enriched records        │
-         └──────────────┬────────────────┘
-                         ▼
-         ┌─────────────────────────────┐
-         │   Pillar 3 — The Ledger       │
-         │  SHA-256 record hash          │
-         │  Polygon Amoy testnet (PoA)   │
-         │  Cross-node corroboration     │
-         └─────────────────────────────┘
-```
 
 **Key design point:** only the SHA-256 hash of a classified record goes on-chain — never raw attacker IPs or other personal data. The blockchain proves a record existed and wasn't altered; the full enriched data stays in each node's own off-chain Postgres store.
 
@@ -64,14 +19,36 @@ A single honeypot only sees what hits it. A centralized threat-intel platform re
 
 ## Classification
 
-The rule-based classifier maps session behavior to MITRE ATT&CK techniques across 13 categories, including reconnaissance, credential brute force, malware deployment, cryptominer installation, botnet recruitment, reverse shell, privilege escalation, and two low-signal categories added specifically to close a taxonomy gap found during testing — `banner_grab` (connect, no auth attempt, disconnect) and `single_credential_probe` (one opportunistic login try, no shell activity) — so that low-interaction scanner traffic is captured meaningfully rather than falling into a generic "unclassified" bucket.
+The rule-based classifier maps session behavior to MITRE ATT&CK techniques across 14 categories, including reconnaissance, credential brute force, malware deployment, cryptominer installation, botnet recruitment, reverse shell, and privilege escalation, plus four low-signal/edge categories added specifically to close taxonomy gaps found during testing:
+
+- `banner_grab` — connect, no auth attempt, disconnect (mass scanner fingerprinting)
+- `single_credential_probe` — one opportunistic login try, no shell activity
+- `shell_verification_probe` — a single bare `echo <token>` command and nothing else: the classic shell-liveness check IoT-botnet loaders run to confirm they got a real, responsive shell before committing to a payload
+- `defense_evasion` (extended) — now also catches the `chattr -i` / `lockr` "device lockdown" pattern, where a bot locks the `.ssh` directory's immutable attribute to exclude rival bots or the admin after claiming a host (MITRE T1222)
+
+Together these mean low-interaction scanner and botnet traffic is captured meaningfully rather than falling into a generic "unclassified" bucket.
 
 ## Current status
 
-As of the latest full data pull across all three nodes:
+As of the latest full reclassification pass across all three nodes (Oct 2026):
 
-- **12,216** real captured sessions processed, **0% unclassified** — full classifier coverage
-- **90%** of captured sessions classified as `reconnaissance` (genuine command execution inside the emulated shell), consistent across all three nodes
+- **14,538** real captured sessions processed across Node A/B/C, **99.993% classified** (1 session left genuinely unclassified — an architecture-fingerprinting + disk-space probe, documented rather than forced into a rule built off a single sample)
+- Per-node breakdown:
+
+  | Attack Type | Node A | Node B | Node C |
+  |---|---|---|---|
+  | reconnaissance | 4,253 | 5,625 | 1,932 |
+  | single_credential_probe | 633 | 80 | 275 |
+  | banner_grab | 435 | 127 | 334 |
+  | shell_verification_probe | 742 | — | 1 |
+  | persistence_mechanism | 72 | — | 4 |
+  | malware_deployment | 8 | — | 15 |
+  | defense_evasion | 1 | — | — |
+  | unclassified | — | — | 1 |
+  | **Total** | **6,144** | **5,832** | **2,562** |
+
+- A pre-existing data-integrity bug was found and corrected during this pass: several hundred sessions with a real recorded login attempt had been stored as `banner_grab` (which requires zero credential attempts) rather than `single_credential_probe` — likely a historical ingestion-time mismatch. All affected records were corrected via a dry-run-then-apply reclassification script, wrapped in a single transaction for safety.
+- Clear IoT-botnet signal in the dataset: `shell_verification_probe` (bare `echo` liveness checks) and the `lockr`/`chattr -i` device-lockdown pattern are both textbook Mirai-family behaviors; default-credential pairs observed (e.g. `root`/`xiaomao`, `admin`/`888888`) match known IoT scanner dictionaries.
 - All three nodes de-fingerprinted from Cowrie's stock defaults (default hostname `svr04`, default SSH banner falsely claiming Debian on an Ubuntu host) to a non-default, internally-consistent configuration — intended to reduce attackers disengaging immediately after detecting a honeypot signature
 
 ### Known limitations (honest, not yet addressed)
@@ -94,4 +71,3 @@ As of the latest full data pull across all three nodes:
    ```bash
    python pipeline/storage/check_totals.py
    ```
-
