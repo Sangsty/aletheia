@@ -1,4 +1,4 @@
-# Secrets — never commit
+# Secrets â€” never commit
 .env
 *.pem
 *.key
@@ -15,10 +15,19 @@ blockchain/artifacts/
 blockchain/cache/
 blockchain/artifacts_exported/
 
+# Dashboard build output
+dashboard/frontend/dist/
+dashboard/frontend/build/
+
 # Live captured data (your own local pulls, not meant for the repo)
 pipeline/ingestion/live_sessions/
 pipeline/ingestion/*.json
 !pipeline/ingestion/sample_cowrie_session*.json
+
+# Automation's own local data (not source)
+pipeline/automation/live_sessions/
+pipeline/automation/*.json
+pipeline/automation/.auto_ingest_state_*.json
 
 # OS noise
 .DS_Store
