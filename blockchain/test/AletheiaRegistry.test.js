@@ -14,8 +14,39 @@ describe("AletheiaRegistry", function () {
   beforeEach(async function () {
     [nodeA, nodeB, nodeC, nodeD] = await ethers.getSigners();
     const Registry = await ethers.getContractFactory("AletheiaRegistry");
-    registry = await Registry.deploy();
+    // nodeD is deliberately left OUT of the fixed allowlist — it's used
+    // below to assert that an unregistered address is rejected.
+    registry = await Registry.deploy(nodeA.address, nodeB.address, nodeC.address);
     await registry.waitForDeployment();
+  });
+
+  describe("access control (fixed node allowlist)", function () {
+    it("rejects submitRecord from an address outside the fixed allowlist", async function () {
+      await expect(
+        registry.connect(nodeD).submitRecord(recordHash, attackType, severity, attckTags, enrichmentScore)
+      ).to.be.revertedWithCustomError(registry, "NotARegisteredNode").withArgs(nodeD.address);
+    });
+
+    it("rejects corroborate from an address outside the fixed allowlist", async function () {
+      await registry.connect(nodeA).submitRecord(recordHash, attackType, severity, attckTags, enrichmentScore);
+      await expect(
+        registry.connect(nodeD).corroborate(recordHash)
+      ).to.be.revertedWithCustomError(registry, "NotARegisteredNode").withArgs(nodeD.address);
+    });
+
+    it("rejects deployment with a duplicate node address", async function () {
+      const Registry = await ethers.getContractFactory("AletheiaRegistry");
+      await expect(
+        Registry.deploy(nodeA.address, nodeA.address, nodeC.address)
+      ).to.be.revertedWithCustomError(Registry, "DuplicateNodeAddress");
+    });
+
+    it("rejects deployment with a zero address", async function () {
+      const Registry = await ethers.getContractFactory("AletheiaRegistry");
+      await expect(
+        Registry.deploy(ethers.ZeroAddress, nodeB.address, nodeC.address)
+      ).to.be.revertedWithCustomError(Registry, "ZeroAddressNode");
+    });
   });
 
   describe("submitRecord", function () {
@@ -128,11 +159,13 @@ describe("AletheiaRegistry", function () {
     });
 
     it("accumulates correctly across multiple corroborations", async function () {
+      // Only nodeB and nodeC are available to corroborate nodeA's
+      // submission now — with a fixed 3-node federation, that's the
+      // maximum possible (nodeD is outside the allowlist).
       await registry.connect(nodeB).corroborate(recordHash);
       await registry.connect(nodeC).corroborate(recordHash);
-      await registry.connect(nodeD).corroborate(recordHash);
       const [score] = await registry.getReputation(nodeA.address);
-      expect(score).to.equal(30); // 3 corroborations x 10
+      expect(score).to.equal(20); // 2 corroborations x 10
     });
   });
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 /**
  * @title AletheiaRegistry
- * @notice Pillar 3 ("The Ledger") of the Aletheia architecture.
+ * @notice Anchoring layer of the Aletheia architecture.
  *
  * Records the SHA-256 hash of an enriched threat intelligence record
  * on-chain, along with its classification metadata. Independent nodes
@@ -16,9 +16,21 @@ pragma solidity ^0.8.24;
  *    never touches the chain — only its hash and small metadata do.
  *    Off-chain storage (PostgreSQL) holds the full record.
  *  - A node's identity on-chain IS its Ethereum address (msg.sender).
- *    No separate registration step is required to submit; this keeps
- *    the contract simple for a PoA network where validator addresses
- *    are already the trusted node identities.
+ *    On a private/permissioned PoA network, validator addresses are
+ *    already the trusted node identities and no separate registration
+ *    step would be needed. This contract targets the PUBLIC Polygon
+ *    Amoy testnet instead, where that assumption does not hold — any
+ *    address can call a PoA network's RPC, so without a check here,
+ *    any address could submit or corroborate records, undermining the
+ *    federation layer's actual trust claim (independent attestation by
+ *    known, distinct node identities). To keep that claim true, the
+ *    exact set of federation node addresses is fixed once, at deploy
+ *    time, via the constructor, and only those addresses may submit
+ *    or corroborate. This is deliberately immutable rather than
+ *    owner-adjustable: for this project's scope (3 known nodes), a
+ *    fixed allowlist is simpler to reason about and to cite as
+ *    evidence ("these are the attested node identities, by design")
+ *    than an owner-mutable one would be.
  *  - Reputation is a simple accumulating score, not a decaying one —
  *    see getReputation() for the rationale.
  */
@@ -54,8 +66,57 @@ contract AletheiaRegistry {
     mapping(bytes32 => mapping(address => bool)) private hasCorroborated;
     mapping(address => NodeReputation) private reputations;
 
+    /// @notice The fixed federation node allowlist, set once at deploy
+    ///         time and never changed afterward (see contract-level
+    ///         design notes above for why this is immutable, not
+    ///         owner-adjustable).
+    mapping(address => bool) public isRegisteredNode;
+
+    /// @notice The 3 node addresses, in deploy order (Node A, B, C),
+    ///         kept for easy on-chain/off-chain cross-reference.
+    address[3] public registeredNodes;
+
     uint256 public constant REPUTATION_PER_CORROBORATION_RECEIVED = 10;
     uint256 public constant REPUTATION_PER_CORROBORATION_GIVEN = 2;
+
+    // ─────────────────────────────────────────────────────────
+    // Constructor
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * @notice Fixes the federation's 3 node identities permanently.
+     * @param nodeA Node A's address (e.g. the Hyderabad/Oracle node).
+     * @param nodeB Node B's address.
+     * @param nodeC Node C's address.
+     *
+     * Reverts on a zero address or a duplicate, since either would
+     * silently shrink the federation below 3 independent identities.
+     */
+    constructor(address nodeA, address nodeB, address nodeC) {
+        if (nodeA == address(0) || nodeB == address(0) || nodeC == address(0)) {
+            revert ZeroAddressNode();
+        }
+        if (nodeA == nodeB || nodeA == nodeC || nodeB == nodeC) {
+            revert DuplicateNodeAddress();
+        }
+
+        registeredNodes[0] = nodeA;
+        registeredNodes[1] = nodeB;
+        registeredNodes[2] = nodeC;
+
+        isRegisteredNode[nodeA] = true;
+        isRegisteredNode[nodeB] = true;
+        isRegisteredNode[nodeC] = true;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // Modifiers
+    // ─────────────────────────────────────────────────────────
+
+    modifier onlyRegisteredNode() {
+        if (!isRegisteredNode[msg.sender]) revert NotARegisteredNode(msg.sender);
+        _;
+    }
 
     // ─────────────────────────────────────────────────────────
     // Events
@@ -85,6 +146,9 @@ contract AletheiaRegistry {
     error AlreadyCorroboratedByThisNode();
     error SeverityOutOfRange(uint8 severity);
     error EnrichmentScoreOutOfRange(uint8 score);
+    error NotARegisteredNode(address caller);
+    error ZeroAddressNode();
+    error DuplicateNodeAddress();
 
     // ─────────────────────────────────────────────────────────
     // Core methods
@@ -101,7 +165,7 @@ contract AletheiaRegistry {
         uint8 severity,
         string[] calldata attckTags,
         uint8 enrichmentScore
-    ) external {
+    ) external onlyRegisteredNode {
         if (records[recordHash].exists) revert RecordAlreadyExists(recordHash);
         if (severity > 3) revert SeverityOutOfRange(severity);
         if (enrichmentScore > 100) revert EnrichmentScoreOutOfRange(enrichmentScore);
@@ -130,7 +194,7 @@ contract AletheiaRegistry {
      *         Increases the submitting node's reputation and the
      *         corroborating node's own "contribution" reputation.
      */
-    function corroborate(bytes32 recordHash) external {
+    function corroborate(bytes32 recordHash) external onlyRegisteredNode {
         ThreatRecord storage r = records[recordHash];
         if (!r.exists) revert RecordDoesNotExist(recordHash);
         if (r.submittingNode == msg.sender) revert CannotCorroborateOwnSubmission();
@@ -191,10 +255,10 @@ contract AletheiaRegistry {
      *         keeper bot calling a decay function periodically, or
      *         (b) computing decay lazily here using block.timestamp
      *         at read time. Option (b) is the honest, simple choice
-     *         for this prototype — the dashboard (Pillar 2/5) can
-     *         apply its own decay curve to this raw score for display,
-     *         without the contract needing to be re-deployed if the
-     *         decay formula changes.
+     *         for this prototype — the dashboard (processing/federation
+     *         layers) can apply its own decay curve to this raw score
+     *         for display, without the contract needing to be
+     *         re-deployed if the decay formula changes.
      */
     function getReputation(address node)
         external
