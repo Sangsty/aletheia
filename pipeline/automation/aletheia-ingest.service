@@ -1,0 +1,11 @@
+[Unit]
+Description=Aletheia — incremental Cowrie log ingestion (one run)
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+# Edit these 3 for this node, or drop an EnvironmentFile= with them instead.
+Environment=NODE_ID=node-blr-01
+Environment=COWRIE_LOG_PATH=/home/cowrie/cowrie/var/log/cowrie/cowrie.json
+Environment=ALETHEIA_REPO_ROOT=/opt/aletheia
+ExecStart=/bin/bash /opt/aletheia/pipeline/automation/run_auto_ingest.sh

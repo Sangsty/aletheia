@@ -229,7 +229,26 @@ def db_row_to_stix_bundle(row: dict) -> Bundle:
 
 
 def bundle_to_json(bundle: Bundle, pretty: bool = True) -> str:
-    return bundle.serialize(pretty=pretty)
+    """
+    IMPORTANT — performance note (found while exporting the real ~14,500
+    session corpus for the first time): stix2's own Bundle.serialize(
+    pretty=True) is catastrophically slow at scale — measured at 166
+    SECONDS for a 3,984-object bundle (166s / 3984 ≈ 42ms per object,
+    and it appears worse than linear), which extrapolates to well over
+    an hour, possibly many hours, for the real corpus's ~116,000 STIX
+    objects. bundle.serialize(pretty=False) on the same data is
+    essentially instant (0.023s for 1,610 objects; 1.72s for the full
+    116,231-object real export). So for anything beyond toy/demo size,
+    this always serializes compact first, then re-indents with the
+    standard library's json module (which does NOT have this problem)
+    if a readable file was asked for. Content/validity is identical
+    either way — this only changes how fast you get it and, cosmetically,
+    key ordering within each object.
+    """
+    compact = bundle.serialize(pretty=False)
+    if not pretty:
+        return compact
+    return json.dumps(json.loads(compact), indent=2)
 
 
 if __name__ == "__main__":
