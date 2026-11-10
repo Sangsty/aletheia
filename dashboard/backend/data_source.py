@@ -21,13 +21,49 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
+
 logger = logging.getLogger("aletheia.dashboard")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 SAMPLE_CORPUS_PATH = REPO_ROOT / "pipeline" / "corpus.json"
 
+# Without this, _try_postgres()'s os.environ.get("ALETHEIA_DB_PASSWORD")
+# check below runs before anything has loaded .env into the process
+# environment, so it always reads as unset and silently falls back to
+# the sample corpus even when Postgres is actually up and reachable —
+# this exact bug already happened once this project and was fixed here;
+# keep this call if you ever touch this file again.
+load_dotenv(REPO_ROOT / ".env")
+
 sys.path.insert(0, str(REPO_ROOT / "pipeline" / "storage"))
 sys.path.insert(0, str(REPO_ROOT / "pipeline" / "models"))
+
+
+def _parse_technique_ids(value) -> list:
+    """
+    classifications.attck_technique_ids is written via json.dumps(...)
+    (see pipeline/storage/db.py save_record()), so depending on the
+    column type and driver, fetch_all_records() can hand this back as
+    an actual list (jsonb auto-decoded) OR as the raw JSON string
+    (e.g. '["T1082"]') if the column/view returns it as text. Treating
+    a string as already-a-list silently iterates its characters
+    instead of its technique IDs — this normalizes either shape to a
+    real list so every downstream consumer (dashboard charts, STIX
+    export) gets what it expects.
+    """
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+            return parsed if isinstance(parsed, list) else []
+        except (json.JSONDecodeError, TypeError):
+            logger.warning("Could not parse attck_technique_ids value %r as JSON", value)
+            return []
+    return []
 
 
 def _normalize_record(row: dict, source: str) -> dict:
@@ -43,8 +79,8 @@ def _normalize_record(row: dict, source: str) -> dict:
             "src_ip": str(row.get("src_ip")) if row.get("src_ip") is not None else None,
             "duration_seconds": row.get("duration_seconds"),
             "attack_type": row.get("attack_type") or "unclassified",
-            "severity": row.get("severity"),
-            "attck_technique_ids": row.get("attck_technique_ids") or [],
+            "severity": row.get("severity") or "unknown",
+            "attck_technique_ids": _parse_technique_ids(row.get("attck_technique_ids")),
             "abuseipdb_confidence": row.get("abuseipdb_confidence_score"),
             "greynoise_classification": row.get("greynoise_classification"),
             "record_hash": row.get("record_hash"),
@@ -60,8 +96,8 @@ def _normalize_record(row: dict, source: str) -> dict:
         "src_ip": row.get("src_ip"),
         "duration_seconds": row.get("duration_seconds"),
         "attack_type": row.get("attack_type") or "unclassified",
-        "severity": row.get("severity"),
-        "attck_technique_ids": row.get("attck_technique_ids") or [],
+        "severity": row.get("severity") or "unknown",
+        "attck_technique_ids": _parse_technique_ids(row.get("attck_technique_ids")),
         "abuseipdb_confidence": row.get("abuseipdb_confidence"),
         "greynoise_classification": row.get("greynoise_classification"),
         "record_hash": row.get("record_hash"),

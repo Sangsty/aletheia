@@ -245,3 +245,238 @@ body {
 .error {
   color: #e5484d;
 }
+
+/* ---- node geo metadata (Nodes page) ---- */
+
+.node-geo {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--panel-border);
+  font-size: 0.85rem;
+}
+
+.node-provider {
+  color: var(--text);
+}
+
+.node-region {
+  color: var(--text-dim);
+  margin-top: 0.1rem;
+}
+
+.node-geo-pending {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ---- export buttons ---- */
+
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.export-button {
+  display: inline-block;
+  background: var(--accent);
+  color: #0b0b10;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: opacity 0.15s ease;
+}
+
+.export-button:hover {
+  opacity: 0.85;
+}
+
+.export-button-small {
+  margin-left: auto;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+/* ---- About page ---- */
+
+.about-hero {
+  max-width: 820px;
+  margin-bottom: 1.5rem;
+}
+
+.about-hero h2 {
+  margin: 0 0 0.6rem 0;
+  color: var(--accent);
+}
+
+.about-hero p {
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.section-heading {
+  margin: 2rem 0 1rem 0;
+  font-size: 1rem;
+  color: var(--text);
+  border-left: 3px solid var(--accent);
+  padding-left: 0.6rem;
+}
+
+.about-pipeline {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.pipeline-stage {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+
+.pipeline-pillar {
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pipeline-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.pipeline-body {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  margin-top: 0.4rem;
+  line-height: 1.5;
+}
+
+/* ---- geographic node cards (About page) ---- */
+
+.geo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.geo-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  border-top: 3px solid var(--accent);
+}
+
+.geo-card-pending {
+  border-top-color: var(--text-dim);
+  opacity: 0.75;
+}
+
+.geo-card-label {
+  font-weight: 700;
+}
+
+.geo-card-provider {
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.geo-card-region {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.geo-card-coords {
+  margin-top: 0.4rem;
+  color: var(--text-dim);
+}
+
+.geo-card-count {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+
+.geo-card-pending .geo-card-count {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ---- Learn page ---- */
+
+.severity-heading.severity-critical { border-left-color: #e5484d; }
+.severity-heading.severity-high { border-left-color: #f5a524; }
+.severity-heading.severity-medium { border-left-color: #f5d90a; }
+.severity-heading.severity-low { border-left-color: #4cc38a; }
+
+.learn-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.learn-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+
+.learn-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.learn-card-label {
+  font-weight: 600;
+}
+
+.technique-badges {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.technique-badge {
+  display: inline-block;
+  background: #1e2a3a;
+  color: var(--accent);
+  border: 1px solid #2d3d4f;
+  border-radius: 6px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.78rem;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  text-decoration: none;
+}
+
+.technique-badge:hover {
+  border-color: var(--accent);
+}
+
+.technique-badge-none {
+  color: var(--text-dim);
+  background: transparent;
+  border-style: dashed;
+}
+
+.learn-card-row {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.learn-card-row-label {
+  color: var(--text);
+  font-weight: 600;
+}

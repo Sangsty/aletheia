@@ -22,6 +22,14 @@ export default function Nodes() {
             <div className="node-label">{n.node_label}</div>
             <div className="node-id mono">{n.node_id}</div>
             <div className="node-count">{n.session_count} sessions</div>
+            {n.provider ? (
+              <div className="node-geo">
+                <div className="node-provider">{n.provider}</div>
+                <div className="node-region">{n.region}</div>
+              </div>
+            ) : (
+              <div className="node-geo node-geo-pending">Deployment details pending</div>
+            )}
           </div>
         ))}
       </div>

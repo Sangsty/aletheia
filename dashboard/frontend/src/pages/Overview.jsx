@@ -21,6 +21,21 @@ export default function Overview() {
   const [attackTypes, setAttackTypes] = useState(null);
   const [corroboration, setCorroboration] = useState(null);
   const [error, setError] = useState(null);
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const { skipped } = await api.exportStix();
+      if (skipped) {
+        alert(`Exported, but ${skipped} record(s) couldn't be converted and were skipped — check the backend log.`);
+      }
+    } catch (e) {
+      alert(`STIX export failed: ${e.message}`);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   useEffect(() => {
     Promise.all([api.statsSummary(), api.statsAttackTypes(), api.statsCorroboration()])
@@ -42,6 +57,12 @@ export default function Overview() {
   return (
     <div className="page">
       <DataSourceBanner dataSource={summary.data_source} />
+
+      <div className="page-actions">
+        <button className="export-button" onClick={handleExport} disabled={exporting}>
+          {exporting ? "Exporting… (full corpus can take ~30-60s)" : "Export all as STIX 2.1 ⬇"}
+        </button>
+      </div>
 
       <div className="stat-cards">
         <div className="stat-card">
@@ -70,7 +91,11 @@ export default function Overview() {
               <CartesianGrid strokeDasharray="3 3" stroke="#333" />
               <XAxis dataKey="name" stroke="#aaa" />
               <YAxis stroke="#aaa" allowDecimals={false} />
-              <Tooltip contentStyle={{ background: "#1e1e2a", border: "1px solid #444" }} />
+              <Tooltip
+                contentStyle={{ background: "#1e1e2a", border: "1px solid #444" }}
+                labelStyle={{ color: "#9999ab" }}
+                itemStyle={{ color: "#e4e4ec" }}
+              />
               <Bar dataKey="value">
                 {severityData.map((entry) => (
                   <Cell key={entry.name} fill={SEVERITY_COLORS[entry.name] || "#888"} />
@@ -89,7 +114,11 @@ export default function Overview() {
                   <Cell key={entry.name} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{ background: "#1e1e2a", border: "1px solid #444" }} />
+              <Tooltip
+                contentStyle={{ background: "#1e1e2a", border: "1px solid #444" }}
+                labelStyle={{ color: "#9999ab" }}
+                itemStyle={{ color: "#e4e4ec" }}
+              />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -102,7 +131,11 @@ export default function Overview() {
               <CartesianGrid strokeDasharray="3 3" stroke="#333" />
               <XAxis type="number" stroke="#aaa" allowDecimals={false} />
               <YAxis type="category" dataKey="name" stroke="#aaa" width={140} />
-              <Tooltip contentStyle={{ background: "#1e1e2a", border: "1px solid #444" }} />
+              <Tooltip
+                contentStyle={{ background: "#1e1e2a", border: "1px solid #444" }}
+                labelStyle={{ color: "#9999ab" }}
+                itemStyle={{ color: "#e4e4ec" }}
+              />
               <Bar dataKey="value" fill="#4cc9f0" />
             </BarChart>
           </ResponsiveContainer>

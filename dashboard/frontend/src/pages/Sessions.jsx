@@ -6,6 +6,7 @@ export default function Sessions() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({ attack_type: "", severity: "" });
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const params = {};
@@ -13,6 +14,23 @@ export default function Sessions() {
     if (filters.severity) params.severity = filters.severity;
     api.sessions(params).then(setResult).catch((e) => setError(e.message));
   }, [filters]);
+
+  async function handleExport() {
+    const params = {};
+    if (filters.attack_type) params.attack_type = filters.attack_type;
+    if (filters.severity) params.severity = filters.severity;
+    setExporting(true);
+    try {
+      const { skipped } = await api.exportStix(params);
+      if (skipped) {
+        alert(`Exported, but ${skipped} record(s) couldn't be converted and were skipped — check the backend log.`);
+      }
+    } catch (e) {
+      alert(`STIX export failed: ${e.message}`);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   if (error) return <div className="error">Could not reach the API: {error}</div>;
   if (!result) return <div className="loading">Loading…</div>;
@@ -33,6 +51,9 @@ export default function Sessions() {
           <option value="low">Low</option>
         </select>
         <span className="filter-count">{result.count} sessions</span>
+        <button className="export-button export-button-small" onClick={handleExport} disabled={exporting}>
+          {exporting ? "Exporting…" : "Export filtered as STIX 2.1 ⬇"}
+        </button>
       </div>
 
       <table className="sessions-table">
